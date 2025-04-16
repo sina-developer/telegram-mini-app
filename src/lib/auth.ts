@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+import { useState, useEffect } from 'react';
 
 export type UserRole = 'user' | 'admin';
 
@@ -24,6 +25,22 @@ const DUMMY_USERS: User[] = [
 interface LoginCredentials {
   email: string;
   password: string;
+}
+
+export function useAdmin() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const role = await getUserRole();
+      setIsAdmin(role === 'admin');
+      setLoading(false);
+    };
+    checkAdminStatus();
+  }, []);
+
+  return { isAdmin, loading };
 }
 
 export async function login(credentials: LoginCredentials): Promise<boolean> {

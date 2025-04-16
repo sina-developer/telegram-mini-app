@@ -19,7 +19,7 @@ export function middleware(request: NextRequest) {
 
   if (request.nextUrl.pathname === '/login' && isAuthenticated) {
     const dashboardUrl =
-      userRole === 'admin' ? '/dashboard/admin' : '/dashboard/user';
+      userRole === 'admin' ? '/dashboard/admin' : '/dashboard';
     return NextResponse.redirect(new URL(dashboardUrl, request.url));
   }
 
@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
 
     if (allowedRoles && !allowedRoles.includes(userRole)) {
       const dashboardUrl =
-        userRole === 'admin' ? '/dashboard/admin' : '/dashboard/user';
+        userRole === 'admin' ? '/dashboard/admin' : '/dashboard';
       return NextResponse.redirect(new URL(dashboardUrl, request.url));
     }
   }
