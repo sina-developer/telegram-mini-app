@@ -1,12 +1,15 @@
-import { UserRole } from '@/enums';
-import Cookies from 'js-cookie';
-import { useState, useEffect, useCallback } from 'react';
+'use client';
 
-interface User {
-  email: string;
-  password: string;
-  role: UserRole;
-}
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useState,
+  useEffect,
+} from 'react';
+import { UserRole } from '@/enums';
+import { AuthState, LoginCredentials, User } from '@/types';
+import Cookies from 'js-cookie';
 
 const DUMMY_USERS: User[] = [
   {
@@ -21,17 +24,16 @@ const DUMMY_USERS: User[] = [
   },
 ];
 
-interface LoginCredentials {
-  email: string;
-  password: string;
+interface AuthContextType extends AuthState {
+  isAuthenticated: boolean;
+  login: (credentials: LoginCredentials) => Promise<boolean>;
+  logout: () => void;
+  checkAuth: () => Promise<void>;
 }
 
-interface AuthState {
-  userRole: UserRole | null;
-  loading: boolean;
-}
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export function useAuth() {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     userRole: null,
     loading: true,
@@ -74,7 +76,6 @@ export function useAuth() {
       });
 
       setIsAuthenticated(true);
-
       setAuthState({
         userRole: user.role,
         loading: false,
@@ -97,11 +98,25 @@ export function useAuth() {
     });
   }, []);
 
-  return {
-    ...authState,
-    isAuthenticated,
-    login,
-    logout,
-    checkAuth,
-  };
+  return (
+    <AuthContext.Provider
+      value={{
+        ...authState,
+        isAuthenticated,
+        login,
+        logout,
+        checkAuth,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

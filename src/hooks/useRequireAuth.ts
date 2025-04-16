@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from './useAuth';
 import { UserRole } from '@/enums';
+import { useAuth } from '@/contexts/auth.context';
 
 export function useRequireAuth(requiredRole?: UserRole) {
   const { isAuthenticated, userRole, loading } = useAuth();

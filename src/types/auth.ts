@@ -1,8 +1,8 @@
 import { UserRole, AuthStatus } from '@/enums';
 
 export interface User {
-  id: number;
   email: string;
+  password: string;
   role: UserRole;
 }
 
@@ -12,6 +12,6 @@ export interface LoginCredentials {
 }
 
 export interface AuthState {
-  status: AuthStatus;
-  user: User | null;
+  userRole: UserRole | null;
+  loading: boolean;
 }
