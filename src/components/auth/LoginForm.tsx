@@ -1,24 +1,21 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { TextField, Button, Typography, Box, Alert } from '@mui/material';
+import { TextField, Button, Typography, Box } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { login } from '@/lib/auth';
 
-const schema = yup.object({
-  email: yup
+const loginSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Invalid email format'),
+  password: z
     .string()
-    .required('Email is required')
-    .email('Please enter a valid email'),
-  password: yup
-    .string()
-    .required('Password is required')
-    .min(8, 'Password must be at least 8 characters'),
+    .min(8, 'Password must be at least 8 characters')
+    .max(100, 'Password is too long'),
 });
 
-type FormData = yup.InferType<typeof schema>;
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
@@ -26,24 +23,31 @@ export default function LoginForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    resolver: yupResolver(schema),
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
       const success = await login(data);
       if (success) {
         router.push('/dashboard');
       } else {
-        throw new Error('Invalid credentials');
+        setError('root', {
+          type: 'manual',
+          message: 'Invalid credentials',
+        });
       }
     } catch (err) {
-      return Promise.reject(err);
+      setError('root', {
+        type: 'manual',
+        message: 'An error occurred during login',
+      });
     }
   };
 
@@ -60,6 +64,12 @@ export default function LoginForm() {
       >
         Sign In
       </Typography>
+
+      {errors.root && (
+        <Typography color="error" sx={{ mb: 2, textAlign: 'center' }}>
+          {errors.root.message}
+        </Typography>
+      )}
 
       <TextField
         margin="normal"

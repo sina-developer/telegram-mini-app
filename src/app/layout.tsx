@@ -128,7 +128,7 @@ export default function RootLayout({
                       textDecoration: 'none',
                     }}
                   >
-                    JobSearch
+                    MBlog
                   </Typography>
                   {mounted && (
                     <NavButtons isAuth={isAuth} onLogout={handleLogout} />

@@ -4,8 +4,7 @@ import type { UserRole } from '@/lib/auth';
 
 const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
   '/dashboard/new-post': ['admin'],
-  '/dashboard/user': ['user', 'admin'],
-  '/dashboard': ['user', 'admin'],
+  '/dashboard/': ['user', 'admin'],
 };
 
 export function middleware(request: NextRequest) {
