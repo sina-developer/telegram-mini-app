@@ -1,35 +1,8 @@
 import { Post } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
-import { headers } from 'next/headers';
-import jwt from 'jsonwebtoken';
 import { PostCategory } from '@/enums';
-import {
-  JWT_SECRET,
-  POST_CONSTANTS,
-  POST_VALIDATION_MESSAGES,
-} from '@/constants';
-
-// Mock database - replace with your actual database
-let posts: Post[] = [
-  {
-    id: 1,
-    title: 'Getting Started with Next.js',
-    description:
-      'Learn how to build modern web applications with Next.js framework',
-    category: PostCategory.TECHNOLOGY,
-    imageUrl: 'https://placehold.co/600x400',
-    userId: 1,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    title: 'Best Travel Destinations 2024',
-    description: 'Explore the most amazing places to visit this year',
-    category: PostCategory.LIFESTYLE,
-    userId: 1,
-    createdAt: new Date().toISOString(),
-  },
-];
+import { POST_CONSTANTS, POST_VALIDATION_MESSAGES } from '@/constants';
+import { addPost, getFilteredAndPaginatedPosts } from '@/storage/posts';
 
 function isValidUrl(url: string): boolean {
   try {
@@ -66,36 +39,6 @@ function validatePost(body: any) {
   return errors;
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const validationErrors = validatePost(body);
-
-    if (validationErrors.length > 0) {
-      return NextResponse.json({ errors: validationErrors }, { status: 400 });
-    }
-
-    const newPost: Post = {
-      id: posts.length + 1,
-      title: body.title,
-      description: body.description,
-      category: body.category,
-      imageUrl: body.imageUrl,
-      userId: 1,
-      createdAt: new Date().toISOString(),
-    };
-
-    posts.push(newPost);
-
-    return NextResponse.json(newPost, { status: 201 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create post' },
-      { status: 500 }
-    );
-  }
-}
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -107,30 +50,54 @@ export async function GET(request: NextRequest) {
     );
     const category = searchParams.get('category');
 
-    let filteredPosts = posts;
-    if (category) {
-      filteredPosts = posts.filter((post) => post.category === category);
-    }
-
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-
-    const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
-    const totalPosts = filteredPosts.length;
-    const totalPages = Math.ceil(totalPosts / limit);
+    const result = await getFilteredAndPaginatedPosts(
+      page,
+      limit,
+      category || undefined
+    );
 
     return NextResponse.json({
-      posts: paginatedPosts,
+      posts: result.posts,
       pagination: {
         currentPage: page,
-        totalPages,
-        totalPosts,
-        hasMore: endIndex < totalPosts,
+        totalPages: result.totalPages,
+        totalPosts: result.totalPosts,
+        hasMore: result.hasMore,
       },
     });
   } catch (error) {
+    console.error('Failed to fetch posts:', error);
     return NextResponse.json(
       { error: 'Failed to fetch posts' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validationErrors = validatePost(body);
+
+    if (validationErrors.length > 0) {
+      return NextResponse.json({ errors: validationErrors }, { status: 400 });
+    }
+
+    const postData = {
+      title: body.title,
+      description: body.description,
+      category: body.category as PostCategory,
+      imageUrl: body.imageUrl,
+      userId: 1,
+    };
+
+    const newPost = await addPost(postData);
+
+    return NextResponse.json(newPost, { status: 201 });
+  } catch (error) {
+    console.error('Failed to create post:', error);
+    return NextResponse.json(
+      { error: 'Failed to create post' },
       { status: 500 }
     );
   }

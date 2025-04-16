@@ -21,7 +21,6 @@ export function PostCard({ post }: PostCardProps) {
       {post.imageUrl && (
         <CardMedia
           component="img"
-          height="200"
           image={post.imageUrl}
           alt={post.title}
           sx={{ objectFit: 'cover' }}

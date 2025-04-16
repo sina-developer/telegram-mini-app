@@ -6,11 +6,10 @@ import {
   List,
   ListItem,
   CircularProgress,
-  Pagination,
   Typography,
 } from '@mui/material';
-import { useState, useEffect } from 'react';
-import { PaginationData, Post } from '@/types';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Post } from '@/types';
 import { PostCard } from './PostCard';
 import { PostsHeader } from './PostsHeader';
 import { useAdmin } from '@/hooks';
@@ -20,21 +19,26 @@ export default function PostsList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const { isAdmin } = useAdmin();
-  const [paginationData, setPaginationData] = useState<PaginationData | null>(
-    null
-  );
+  const loaderRef = useRef<HTMLDivElement>(null);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (pageNumber: number) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/posts?page=${page}&limit=10`);
+      const response = await fetch(`/api/posts?page=${pageNumber}&limit=10`);
       if (!response.ok) {
         throw new Error('Failed to fetch posts');
       }
       const data = await response.json();
-      setPosts(data.posts);
-      setPaginationData(data.pagination);
+
+      if (pageNumber === 1) {
+        setPosts(data.posts);
+      } else {
+        setPosts((prev) => [...prev, ...data.posts]);
+      }
+
+      setHasMore(data.pagination.hasMore);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load posts');
     } finally {
@@ -42,26 +46,35 @@ export default function PostsList() {
     }
   };
 
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const target = entries[0];
+      if (target.isIntersecting && hasMore && !loading) {
+        setPage((prev) => prev + 1);
+      }
+    },
+    [hasMore, loading]
+  );
+
   useEffect(() => {
-    fetchPosts();
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 0.1,
+    });
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [handleObserver]);
+
+  useEffect(() => {
+    fetchPosts(page);
   }, [page]);
 
-  const handlePageChange = (
-    _event: React.ChangeEvent<unknown>,
-    value: number
-  ) => {
-    setPage(value);
-  };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" my={4}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
+  if (error && posts.length === 0) {
     return (
       <Typography color="error" my={2}>
         {error}
@@ -81,16 +94,12 @@ export default function PostsList() {
         ))}
       </List>
 
-      {paginationData && paginationData.totalPages > 1 && (
-        <Box display="flex" justifyContent="center" mt={3}>
-          <Pagination
-            count={paginationData.totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-          />
-        </Box>
-      )}
+      <Box ref={loaderRef} display="flex" justifyContent="center" my={3}>
+        {loading && <CircularProgress />}
+        {!hasMore && posts.length > 0 && (
+          <Typography color="textSecondary">No more posts to load</Typography>
+        )}
+      </Box>
     </Paper>
   );
 }

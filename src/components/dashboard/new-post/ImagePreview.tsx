@@ -18,7 +18,7 @@ export default function ImagePreview({ url }: { url: string }) {
         '&::before': {
           content: '""',
           display: 'block',
-          paddingTop: '56.25%', // 16:9 aspect ratio
+          paddingTop: '56.25%',
         },
       }}
     >

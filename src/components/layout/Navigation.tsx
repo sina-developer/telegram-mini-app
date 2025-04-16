@@ -14,7 +14,6 @@ function NavButtons() {
   const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  console.log({ isAuthenticated });
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -24,7 +23,6 @@ function NavButtons() {
     router.push('/login');
   };
 
-  // Don't render anything until mounted to prevent hydration mismatch
   if (!mounted) return null;
 
   if (isAuthenticated) {

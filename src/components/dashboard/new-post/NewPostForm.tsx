@@ -9,18 +9,31 @@ import {
   MenuItem,
   Switch,
   FormControlLabel,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { FORM_CATEGORIES, FORM_IMAGE } from '@/constants/form.constants';
 import { FormCategory } from '@/types';
 import { postSchema, PostFormData } from '@/schemas';
 import ImagePreview from './ImagePreview';
 
 export default function NewPostForm() {
+  const router = useRouter();
   const [useImageUrl, setUseImageUrl] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const {
     register,
@@ -55,17 +68,68 @@ export default function NewPostForm() {
     }
   }, [watchImageUrl, watchImageFile, useImageUrl]);
 
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const onSubmit = async (data: PostFormData) => {
     try {
-      console.log('Form data:', data);
+      const postData = {
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        imageUrl: useImageUrl ? data.imageUrl : undefined,
+      };
+
+      if (!useImageUrl && data.imageFile) {
+        const formData = new FormData();
+        formData.append('file', data.imageFile);
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const { imageUrl } = await uploadResponse.json();
+        postData.imageUrl = imageUrl;
+      }
+
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.errors?.join(', ') || 'Failed to create post');
+      }
 
       reset();
       setPreviewUrl('');
+      setSnackbar({
+        open: true,
+        message: 'Post created successfully!',
+        severity: 'success',
+      });
 
-      alert('Post created successfully!');
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1500);
     } catch (error) {
       console.error('Error creating post:', error);
-      alert('Failed to create post. Please try again.');
+      setSnackbar({
+        open: true,
+        message:
+          error instanceof Error ? error.message : 'Failed to create post',
+        severity: 'error',
+      });
     }
   };
 
@@ -189,6 +253,22 @@ export default function NewPostForm() {
           {isSubmitting ? 'Creating Post...' : 'Create Post'}
         </Button>
       </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }
