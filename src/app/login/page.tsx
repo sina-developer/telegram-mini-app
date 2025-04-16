@@ -1,7 +1,7 @@
 'use client';
 
 import { Container, Paper, Box } from '@mui/material';
-import LoginForm from '@/components/auth/LoginForm';
+import LoginForm from '@/components/login/LoginForm';
 
 export default function LoginPage() {
   return (

@@ -5,7 +5,7 @@ import { TextField, Button, Typography, Box } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { login } from '@/lib/auth';
+import { useAuth } from '@/hooks';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email format'),
@@ -19,6 +19,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
+  const { login } = useAuth();
   const {
     register,
     handleSubmit,
@@ -43,10 +44,12 @@ export default function LoginForm() {
           message: 'Invalid credentials',
         });
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error('Login error:', err);
       setError('root', {
         type: 'manual',
-        message: 'An error occurred during login',
+        message:
+          err instanceof Error ? err.message : 'An error occurred during login',
       });
     }
   };
