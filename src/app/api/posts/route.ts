@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PostCategory } from '@/enums';
 import { POST_CONSTANTS, POST_VALIDATION_MESSAGES } from '@/constants';
-import { addPost, getFilteredAndPaginatedPosts } from '@/storage/posts';
+import { createClient } from 'redis';
+import { Post } from '@/types';
+
+const redis = createClient({
+  url: process.env.REDIS_URL,
+});
+
+// Connect to Redis
+redis.connect().catch(console.error);
 
 function isValidUrl(url: string): boolean {
   try {
@@ -59,19 +67,31 @@ export async function GET(request: NextRequest) {
     );
     const category = searchParams.get('category');
 
-    const result = await getFilteredAndPaginatedPosts(
-      page,
-      limit,
-      category || undefined
-    );
+    // Get all posts from Redis
+    const postsStr = await redis.get('posts');
+    const posts = postsStr ? (JSON.parse(postsStr) as Post[]) : [];
+
+    // Filter by category if provided
+    const filteredPosts = category
+      ? posts.filter((post: Post) => post.category === category)
+      : posts;
+
+    // Calculate pagination
+    const totalPosts = filteredPosts.length;
+    const totalPages = Math.ceil(totalPosts / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    // Get paginated posts
+    const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
 
     return NextResponse.json({
-      posts: result.posts,
+      posts: paginatedPosts,
       pagination: {
         currentPage: page,
-        totalPages: result.totalPages,
-        totalPosts: result.totalPosts,
-        hasMore: result.hasMore,
+        totalPages,
+        totalPosts,
+        hasMore: endIndex < totalPosts,
       },
     });
   } catch (error) {
@@ -92,15 +112,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ errors: validationErrors }, { status: 400 });
     }
 
-    const postData = {
+    // Get existing posts
+    const postsStr = await redis.get('posts');
+    const posts = postsStr ? (JSON.parse(postsStr) as Post[]) : [];
+
+    // Create new post
+    const newPost: Post = {
+      id: posts.length > 0 ? Math.max(...posts.map((p: Post) => p.id)) + 1 : 1,
       title: body.title,
       description: body.description,
       category: body.category as PostCategory,
       imageUrl: body.imageUrl,
       userId: 1,
+      createdAt: new Date().toISOString(),
     };
 
-    const newPost = await addPost(postData);
+    // Add new post to array and save back to Redis
+    posts.unshift(newPost);
+    await redis.set('posts', JSON.stringify(posts));
 
     return NextResponse.json(newPost, { status: 201 });
   } catch (error) {

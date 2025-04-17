@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { put } from '@vercel/blob';
 import { POST_CONSTANTS } from '@/constants';
 
 type AcceptedImageType = (typeof POST_CONSTANTS.ACCEPTED_IMAGE_TYPES)[number];
@@ -38,18 +37,13 @@ export async function POST(request: NextRequest) {
     const originalName = file.name.replace(/[^a-zA-Z0-9.]/g, '');
     const filename = `${timestamp}-${originalName}`;
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    await writeFile(
-      join(uploadDir, filename),
-      Buffer.from(await file.arrayBuffer())
-    );
+    // Upload to Vercel Blob
+    const { url } = await put(filename, file, {
+      access: 'public',
+      addRandomSuffix: true, // Adds a random suffix to prevent naming conflicts
+    });
 
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const host = request.headers.get('host') || 'localhost:3000';
-
-    const imageUrl = `${protocol}://${host}/uploads/${filename}`;
-
-    return NextResponse.json({ imageUrl }, { status: 201 });
+    return NextResponse.json({ imageUrl: url }, { status: 201 });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(

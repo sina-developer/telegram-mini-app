@@ -18,6 +18,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FORM_CATEGORIES, FORM_IMAGE } from '@/constants/form.constants';
 import { FormCategory } from '@/types';
+import { PostCategory } from '@/enums';
 import { postSchema, PostFormData } from '@/schemas';
 import ImagePreview from './ImagePreview';
 
@@ -49,7 +50,7 @@ export default function NewPostForm() {
       imageFile: undefined,
       title: '',
       description: '',
-      category: 'technology',
+      category: 'technology' as PostCategory,
     },
   });
 
@@ -227,21 +228,27 @@ export default function NewPostForm() {
           {...register('description')}
         />
 
-        <TextField
-          select
-          fullWidth
-          label="Category"
-          margin="normal"
-          error={!!errors.category}
-          helperText={errors.category?.message}
-          {...register('category')}
-        >
-          {FORM_CATEGORIES.map((category: FormCategory) => (
-            <MenuItem key={category.value} value={category.value}>
-              {category.label}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Controller
+          name="category"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              select
+              fullWidth
+              label="Category"
+              margin="normal"
+              error={!!errors.category}
+              helperText={errors.category?.message}
+            >
+              {FORM_CATEGORIES.map((category: FormCategory) => (
+                <MenuItem key={category.value} value={category.value}>
+                  {category.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        />
 
         <Button
           type="submit"
