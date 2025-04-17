@@ -11,6 +11,11 @@ A blog platform built as a Telegram Mini App, featuring a clean UI. Built with N
 - 📊 Pagination support
 - 🚀 Optimized for Vercel deployment
 
+## Live Demo
+
+- 🌐 Web App: [https://telegram-mini-app-chi-three.vercel.app/](https://telegram-mini-app-chi-three.vercel.app/)
+- 🤖 Telegram Bot: [@fanap_sina_test_bot](https://t.me/fanap_sina_test_bot)
+
 ## Tech Stack
 
 - **Frontend:**
