@@ -16,6 +16,24 @@ A blog platform built as a Telegram Mini App, featuring a clean UI. Built with N
 - 🌐 Web App: [https://telegram-mini-app-chi-three.vercel.app/](https://telegram-mini-app-chi-three.vercel.app/)
 - 🤖 Telegram Bot: [@fanap_sina_test_bot](https://t.me/fanap_sina_test_bot)
 
+### Test Credentials
+
+You can use these test accounts to try out the application:
+
+1. **Regular User Account**
+
+   ```
+   Email: test@gmail.com
+   Password: 12345678
+   ```
+
+2. **Admin Account**
+
+   ```
+   Email: admin@gmail.com
+   Password: admin123
+   ```
+
 ## Tech Stack
 
 - **Frontend:**
