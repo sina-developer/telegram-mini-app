@@ -1,4 +1,3 @@
-import { Post } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
 import { PostCategory } from '@/enums';
 import { POST_CONSTANTS, POST_VALIDATION_MESSAGES } from '@/constants';
@@ -13,7 +12,14 @@ function isValidUrl(url: string): boolean {
   }
 }
 
-function validatePost(body: any) {
+interface PostRequestBody {
+  title?: string;
+  description?: string;
+  category?: string;
+  imageUrl?: string;
+}
+
+function validatePost(body: PostRequestBody) {
   const errors: string[] = [];
 
   if (!body.title) {
@@ -28,7 +34,10 @@ function validatePost(body: any) {
     errors.push(POST_VALIDATION_MESSAGES.DESCRIPTION_TOO_LONG);
   }
 
-  if (!body.category || !Object.values(PostCategory).includes(body.category)) {
+  if (
+    !body.category ||
+    !Object.values(PostCategory).includes(body.category as PostCategory)
+  ) {
     errors.push(POST_VALIDATION_MESSAGES.CATEGORY_REQUIRED);
   }
 

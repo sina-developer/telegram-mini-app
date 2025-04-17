@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import type { UserRole } from '@/lib/auth';
+import { UserRole } from './enums';
 
 const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
-  '/dashboard/new-post': ['admin'],
-  '/dashboard/': ['user', 'admin'],
+  '/dashboard/new-post': [UserRole.ADMIN],
+  '/dashboard/': [UserRole.USER, UserRole.ADMIN],
 };
 
 export function middleware(request: NextRequest) {

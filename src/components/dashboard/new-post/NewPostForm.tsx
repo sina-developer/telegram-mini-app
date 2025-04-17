@@ -168,7 +168,7 @@ export default function NewPostForm() {
           <Controller
             name="imageFile"
             control={control}
-            render={({ field: { onChange, value, ...field } }) => (
+            render={({ field: { onChange, value } }) => (
               <Box>
                 <input
                   type="file"

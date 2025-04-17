@@ -1,4 +1,4 @@
-import { UserRole, AuthStatus } from '@/enums';
+import { UserRole } from '@/enums';
 
 export interface User {
   email: string;

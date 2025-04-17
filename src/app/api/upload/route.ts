@@ -3,6 +3,8 @@ import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { POST_CONSTANTS } from '@/constants';
 
+type AcceptedImageType = (typeof POST_CONSTANTS.ACCEPTED_IMAGE_TYPES)[number];
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -19,7 +21,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!POST_CONSTANTS.ACCEPTED_IMAGE_TYPES.includes(file.type as any)) {
+    if (
+      !POST_CONSTANTS.ACCEPTED_IMAGE_TYPES.includes(
+        file.type as AcceptedImageType
+      )
+    ) {
       return NextResponse.json(
         {
           error: 'Invalid file type. Only jpg, jpeg, png, and webp are allowed',
