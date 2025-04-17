@@ -25,7 +25,7 @@ export function PostsHeader({ isAdmin }: PostsHeaderProps) {
           href="/dashboard/new-post"
           variant="contained"
           startIcon={<AddIcon />}
-          sx={{ mb: 3 }}
+          // sx={{ mb: 3 }}
         >
           Create New Post
         </Button>

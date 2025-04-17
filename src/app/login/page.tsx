@@ -22,6 +22,7 @@ export default function LoginPage() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            maxWidth: 260,
           }}
         >
           <LoginForm />

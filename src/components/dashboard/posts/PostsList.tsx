@@ -83,7 +83,7 @@ export default function PostsList() {
   }
 
   return (
-    <Paper sx={{ p: 4 }}>
+    <Paper sx={{ p: 4, px: 2 }}>
       <PostsHeader isAdmin={isAdmin} />
 
       <List sx={{ display: 'grid', gap: 2 }}>
