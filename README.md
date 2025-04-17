@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Telegram Mini App - Blog Platform
 
-## Getting Started
+A blog platform built as a Telegram Mini App, featuring a clean UI. Built with Next.js and Material-UI.
 
-First, run the development server:
+## Features
+
+- 📝 Create and manage blog posts
+- 🖼️ Image upload support (via Vercel Blob Storage)
+- 📱 Responsive Material-UI design
+- 🗄️ Redis-based data persistence
+- 📊 Pagination support
+- 🚀 Optimized for Vercel deployment
+
+## Tech Stack
+
+- **Frontend:**
+  - Next.js (App Router)
+  - Material-UI v7
+  - React Hook Form
+  - Zod (Form validation)
+  - TypeScript
+
+- **Backend:**
+  - Next.js API Routes
+  - Redis (Data storage)
+  - Vercel Blob Storage (Image storage)
+
+## Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Redis instance (Cloud or local)
+- Vercel account (for deployment)
+
+## Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+# Redis Configuration
+REDIS_URL=your_redis_connection_string
+
+# Vercel Blob Storage
+BLOB_READ_WRITE_TOKEN=your_blob_token
+```
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/sina-developer/telegram-mini-app.git
+cd telegram-mini-app
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Run the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Deploy to Vercel
 
-## Learn More
+1. Push your code to GitHub
 
-To learn more about Next.js, take a look at the following resources:
+2. Import your repository in Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Configure environment variables in Vercel project settings:
+   - Add `REDIS_URL`
+   - Add `BLOB_READ_WRITE_TOKEN`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Deploy!
 
-## Deploy on Vercel
+### Manual Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Install Vercel CLI:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm i -g vercel
+```
+
+2. Link your project:
+
+```bash
+vercel link
+```
+
+3. Add environment variables:
+
+```bash
+vercel env add REDIS_URL
+vercel env add BLOB_READ_WRITE_TOKEN
+```
+
+4. Deploy:
+
+```bash
+vercel deploy
+```
+
+## Project Structure
+
+```
+├── src/
+│   ├── app/              # Next.js app router pages
+│   ├── components/       # React components
+│   ├── constants/        # Constants and configurations
+│   ├── enums/           # TypeScript enums
+│   ├── schemas/         # Zod validation schemas
+│   ├── types/           # TypeScript types/interfaces
+│   └── utils/           # Utility functions
+├── public/              # Static files
+└── scripts/             # Utility scripts
+```
+
+## API Routes
+
+- `POST /api/posts` - Create a new post
+- `GET /api/posts` - Get all posts (with pagination)
+- `POST /api/upload` - Upload images to Vercel Blob
